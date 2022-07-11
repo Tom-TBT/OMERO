@@ -71,6 +71,7 @@ class omero_images:
                             host=hostname, port=port, secure=True)
         conn.connect()
         conn.c.enableKeepAlive(60)
+        conn.SERVICE_OPTS.setOmeroGroup("-1")
 
         return conn
 

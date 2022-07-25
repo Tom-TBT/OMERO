@@ -44,6 +44,7 @@ class GUI:
         self.model_name = tk.StringVar(self.buttonframe, value="my_model")
         self.train_epochs = tk.StringVar(self.buttonframe, value=config['N2V']["n_epoch"])
         self.train_batchsize = tk.StringVar(self.buttonframe, value=config['N2V']["batch_size"])
+        self.steps_per_epoch = tk.StringVar(self.buttonframe, value=config['N2V']["steps_per_epoch"])
         self.dataset_id = tk.StringVar(self.buttonframe, value=config['N2V']["dataset_id"])
         patch_opt = list(2**np.arange(5,11)) # Gives patch size option in the powers of 2
         patch_size = config['N2V']["patch_size"]
@@ -77,24 +78,26 @@ class GUI:
         self.insert_train_epochs = tk.Entry(self.buttonframe, textvariable=self.train_epochs).grid(row=4, column=3, padx=10, pady=10, sticky=tk.W)
         self.label3 = tk.Label(self.buttonframe, text="Batch size").grid(row=5, column=1, columnspan=2, padx=10, pady=10, sticky=tk.E)
         self.insert_train_batchsize = tk.Entry(self.buttonframe, textvariable=self.train_batchsize).grid(row=5, column=3, padx=10, pady=10, sticky=tk.W)
+        self.label4 = tk.Label(self.buttonframe, text="Steps per epoch").grid(row=6, column=1, columnspan=2, padx=10, pady=10, sticky=tk.E)
+        self.insert_steps_per_epoch = tk.Entry(self.buttonframe, textvariable=self.steps_per_epoch).grid(row=6, column=3, padx=10, pady=10, sticky=tk.W)
         self.start_training = tk.Button(self.buttonframe, text="Start training", command=self.start_training)
-        self.start_training.grid(row=6, column=1, padx=30, pady=10, sticky=tk.E)
+        self.start_training.grid(row=7, column=1, padx=30, pady=10, sticky=tk.E)
         self.preview_result_button = tk.Button(self.buttonframe, text="Preview Result", command=self.preview_image, state=tk.DISABLED)
-        self.preview_result_button.grid(row=6, column=2, padx=30, pady=10, sticky=tk.E)
+        self.preview_result_button.grid(row=7, column=2, padx=30, pady=10, sticky=tk.E)
         self.plot_loss_button = tk.Button(self.buttonframe, text="Plot loss", command=self.plot_loss, state=tk.DISABLED)
-        self.plot_loss_button.grid(row=6, column=3, padx=30, pady=10, sticky=tk.E)
+        self.plot_loss_button.grid(row=7, column=3, padx=30, pady=10, sticky=tk.E)
 
         # Prediction Buttons
-        self.label4 = tk.Label(self.buttonframe, text="Use trained model for prediction:")
-        self.label4.grid(row=7, column=1, columnspan=2, padx=10, pady=10, sticky=tk.W)
+        self.label5 = tk.Label(self.buttonframe, text="Use trained model for prediction:")
+        self.label5.grid(row=8, column=1, columnspan=2, padx=10, pady=10, sticky=tk.W)
         self.load_model_button = tk.Button(self.buttonframe, text="Load trained model", command=self.load_model)
-        self.load_model_button.grid(row=8, column=1, padx=20, pady=10, sticky=tk.W)
+        self.load_model_button.grid(row=9, column=1, padx=20, pady=10, sticky=tk.W)
         self.predict_button = tk.Button(self.buttonframe, text="Apply model to data", command=self.apply_model)
-        self.predict_button.grid(row=8, column=2, padx=10, pady=10, sticky=tk.W)
+        self.predict_button.grid(row=9, column=2, padx=10, pady=10, sticky=tk.W)
 
         # Omero upload button
         self.upload_omero_button = tk.Button(self.buttonframe, text="Upload to omero", command=self.upload_to_omero, state=tk.DISABLED)
-        self.upload_omero_button.grid(row=8, column=3, padx=10, pady=10, sticky=tk.W)
+        self.upload_omero_button.grid(row=9, column=3, padx=10, pady=10, sticky=tk.W)
 
         #Text and Progress Bar
         self.progress_text = tk.Text(self.buttonframe, height=6, width=60)
@@ -193,7 +196,7 @@ class GUI:
         self.datagen = N2V_DataGenerator()
         np.random.shuffle(self.imgs)
         patch_shape = self.set_patch_shape()
-        patches = self.datagen.generate_patches_from_list(self.imgs, shape=patch_shape, augment=True, shuffle=True)  #
+        patches = self.datagen.generate_patches_from_list(self.imgs, shape=patch_shape, augment=True, shuffle=True)
         size_train = int((patches.shape[0]) * 0.9)
         self.X = np.array(patches[:size_train])
         self.X_val = np.array(patches[size_train:])
@@ -248,19 +251,33 @@ class GUI:
             train_steps=0
             train_batch_size=0
 
+        try:
+            steps_per_epoch = int(self.steps_per_epoch.get())
+        except ValueError:
+            tk.messagebox.showwarning(title="Wrong entry", message="Please enter a number for the steps per epoch!")
+            return
+
         shapes = []
         for i in range(len(self.imgs)):
             shapes.append(self.imgs[i].shape[1])
 
         if (epochs > 0) and (train_batch_size > 0):
             patch_shape = self.generate_patches()
-            train_steps = int(self.X.shape[0]/train_batch_size)
+            train_steps = min(int(self.X.shape[0]/train_batch_size),
+                              steps_per_epoch)
 
             self.config = N2VConfig(self.X, unet_kern_size=3,
-                           train_steps_per_epoch = train_steps, train_epochs=epochs, train_loss='mse',
-                           batch_norm=True, train_batch_size=train_batch_size, n2v_perc_pix=0.198, n2v_patch_shape=patch_shape,
-                           unet_n_first=96, unet_residual=True, n2v_manipulator='uniform_withCP',
-                           n2v_neighborhood_radius=2, single_net_per_channel=False, train_tensorboard=True)
+                                    train_steps_per_epoch=train_steps,
+                                    train_epochs=epochs, train_loss='mse',
+                                    batch_norm=True,
+                                    train_batch_size=train_batch_size,
+                                    n2v_perc_pix=0.198,
+                                    n2v_patch_shape=patch_shape,
+                                    unet_n_first=96, unet_residual=True,
+                                    n2v_manipulator='uniform_withCP',
+                                    n2v_neighborhood_radius=2,
+                                    single_net_per_channel=False,
+                                    train_tensorboard=True)
             self.start_training.config(state=tk.ACTIVE)
             self.progress_text.insert(tk.END, f"\n {datetime.now().strftime('%H:%M:%S')}: ")
             configs_red = f"\n Training on {self.X.shape[0]} images. \n Using {self.X_val.shape[0]} validation images. \n "\

@@ -193,7 +193,7 @@ class GUI:
         self.datagen = N2V_DataGenerator()
         np.random.shuffle(self.imgs)
         patch_shape = self.set_patch_shape()
-        patches = self.datagen.generate_patches_from_list(self.imgs, shape=patch_shape, augment=True)  #
+        patches = self.datagen.generate_patches_from_list(self.imgs, shape=patch_shape, augment=True, shuffle=True)  #
         size_train = int((patches.shape[0]) * 0.9)
         self.X = np.array(patches[:size_train])
         self.X_val = np.array(patches[size_train:])

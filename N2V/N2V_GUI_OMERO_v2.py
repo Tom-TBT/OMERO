@@ -54,8 +54,6 @@ class GUI:
         self.train_patchsize = tk.StringVar(self.buttonframe, value=patch_size)
 
         #Selection box for image dimensions
-        self.label6 = tk.Label(self.buttonframe, text="")
-        self.label6.grid(row=0, column=1, columnspan=1, padx=10, pady=10, sticky=tk.E)
         self.connect_button = tk.Button(self.buttonframe, text="Login to Omero", command=self.logindata_omero)
         self.connect_button.grid(row=0, column=1, padx=10, pady=10, sticky=tk.E)
         self.label0 = tk.Label(self.buttonframe, text="Insert DatasetID")
@@ -68,18 +66,20 @@ class GUI:
         self.choose_file_btn.grid(row=1, column=3, padx=10, pady=10, sticky=tk.W)
 
         # Training Buttons
-        self.label1 = tk.Label(self.buttonframe, text="Save model as:").grid(row=2, column=1, columnspan=2, padx=10, pady=10, sticky=tk.E)
-        self.insert_model_name = tk.Entry(self.buttonframe, textvariable=self.model_name).grid(row=2, column=3, padx=10, pady=10, sticky=tk.W)
+        label_prop_d = {"column":1, "columnspan":2, "padx":10, "pady":10, "sticky":tk.E}
+        self.label1 = tk.Label(self.buttonframe, text="Save model as:").grid(row=2, **label_prop_d)
+        self.label2 = tk.Label(self.buttonframe, text="Patch size").grid(row=3, **label_prop_d)
+        self.label3 = tk.Label(self.buttonframe, text="Number of training epochs").grid(row=4, **label_prop_d)
+        self.label4 = tk.Label(self.buttonframe, text="Batch size").grid(row=5, **label_prop_d)
+        self.label5 = tk.Label(self.buttonframe, text="Steps per epoch").grid(row=6, **label_prop_d)
 
-        self.label5 = tk.Label(self.buttonframe, text="Patch size").grid(row=3, column=1, columnspan=2, padx=10, pady=10, sticky=tk.E)
-        self.patchsize_dropdown = tk.OptionMenu(self.buttonframe, self.train_patchsize, *patch_opt).grid(row=3, column=3, padx=10, pady=10, sticky=tk.W)
+        btn_prop_d = {"column":3, "padx":10, "pady":10, "sticky":tk.W}
+        self.insert_model_name = tk.Entry(self.buttonframe, textvariable=self.model_name).grid(row=2, **btn_prop_d)
+        self.patchsize_dropdown = tk.OptionMenu(self.buttonframe, self.train_patchsize, *patch_opt).grid(row=3, **btn_prop_d)
+        self.insert_train_epochs = tk.Entry(self.buttonframe, textvariable=self.train_epochs).grid(row=4, **btn_prop_d)
+        self.insert_train_batchsize = tk.Entry(self.buttonframe, textvariable=self.train_batchsize).grid(row=5, **btn_prop_d)
+        self.insert_steps_per_epoch = tk.Entry(self.buttonframe, textvariable=self.steps_per_epoch).grid(row=6, **btn_prop_d)
         
-        self.label2 = tk.Label(self.buttonframe, text="Number of training epochs").grid(row=4, column=1, columnspan=2, padx=10, pady=10, sticky=tk.E)
-        self.insert_train_epochs = tk.Entry(self.buttonframe, textvariable=self.train_epochs).grid(row=4, column=3, padx=10, pady=10, sticky=tk.W)
-        self.label3 = tk.Label(self.buttonframe, text="Batch size").grid(row=5, column=1, columnspan=2, padx=10, pady=10, sticky=tk.E)
-        self.insert_train_batchsize = tk.Entry(self.buttonframe, textvariable=self.train_batchsize).grid(row=5, column=3, padx=10, pady=10, sticky=tk.W)
-        self.label4 = tk.Label(self.buttonframe, text="Steps per epoch").grid(row=6, column=1, columnspan=2, padx=10, pady=10, sticky=tk.E)
-        self.insert_steps_per_epoch = tk.Entry(self.buttonframe, textvariable=self.steps_per_epoch).grid(row=6, column=3, padx=10, pady=10, sticky=tk.W)
         self.start_training = tk.Button(self.buttonframe, text="Start training", command=self.start_training)
         self.start_training.grid(row=7, column=1, padx=30, pady=10, sticky=tk.E)
         self.preview_result_button = tk.Button(self.buttonframe, text="Preview Result", command=self.preview_image, state=tk.DISABLED)

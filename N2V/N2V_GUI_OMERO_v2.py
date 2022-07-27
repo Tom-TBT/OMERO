@@ -46,6 +46,8 @@ class GUI:
         self.train_batchsize = tk.StringVar(self.buttonframe, value=config['N2V']["batch_size"])
         self.steps_per_epoch = tk.StringVar(self.buttonframe, value=config['N2V']["steps_per_epoch"])
         self.dataset_id = tk.StringVar(self.buttonframe, value=config['N2V']["dataset_id"])
+        self.train_fraction = tk.StringVar(self.buttonframe, value=config['N2V']["train_fraction"])
+
         patch_opt = list(2**np.arange(5,11)) # Gives patch size option in the powers of 2
         patch_size = config['N2V']["patch_size"]
         if int(patch_size) not in patch_opt:
@@ -72,6 +74,7 @@ class GUI:
         self.label3 = tk.Label(self.buttonframe, text="Number of training epochs").grid(row=4, **label_prop_d)
         self.label4 = tk.Label(self.buttonframe, text="Batch size").grid(row=5, **label_prop_d)
         self.label5 = tk.Label(self.buttonframe, text="Steps per epoch").grid(row=6, **label_prop_d)
+        self.label6 = tk.Label(self.buttonframe, text="Train fraction").grid(row=7, **label_prop_d)
 
         btn_prop_d = {"column":3, "padx":10, "pady":10, "sticky":tk.W}
         self.insert_model_name = tk.Entry(self.buttonframe, textvariable=self.model_name).grid(row=2, **btn_prop_d)
@@ -79,31 +82,32 @@ class GUI:
         self.insert_train_epochs = tk.Entry(self.buttonframe, textvariable=self.train_epochs).grid(row=4, **btn_prop_d)
         self.insert_train_batchsize = tk.Entry(self.buttonframe, textvariable=self.train_batchsize).grid(row=5, **btn_prop_d)
         self.insert_steps_per_epoch = tk.Entry(self.buttonframe, textvariable=self.steps_per_epoch).grid(row=6, **btn_prop_d)
-        
+        self.insert_train_fraction = tk.Entry(self.buttonframe, textvariable=self.train_fraction).grid(row=7, **btn_prop_d)
+
         self.start_training = tk.Button(self.buttonframe, text="Start training", command=self.start_training)
-        self.start_training.grid(row=7, column=1, padx=30, pady=10, sticky=tk.E)
+        self.start_training.grid(row=8, column=1, padx=30, pady=10, sticky=tk.E)
         self.preview_result_button = tk.Button(self.buttonframe, text="Preview Result", command=self.preview_image, state=tk.DISABLED)
-        self.preview_result_button.grid(row=7, column=2, padx=30, pady=10, sticky=tk.E)
+        self.preview_result_button.grid(row=8, column=2, padx=30, pady=10, sticky=tk.E)
         self.plot_loss_button = tk.Button(self.buttonframe, text="Plot loss", command=self.plot_loss, state=tk.DISABLED)
-        self.plot_loss_button.grid(row=7, column=3, padx=30, pady=10, sticky=tk.E)
+        self.plot_loss_button.grid(row=8, column=3, padx=30, pady=10, sticky=tk.E)
 
         # Prediction Buttons
         self.label5 = tk.Label(self.buttonframe, text="Use trained model for prediction:")
-        self.label5.grid(row=8, column=1, columnspan=2, padx=10, pady=10, sticky=tk.W)
+        self.label5.grid(row=9, column=1, columnspan=2, padx=10, pady=10, sticky=tk.W)
         self.load_model_button = tk.Button(self.buttonframe, text="Load trained model", command=self.load_model)
-        self.load_model_button.grid(row=9, column=1, padx=20, pady=10, sticky=tk.W)
+        self.load_model_button.grid(row=10, column=1, padx=20, pady=10, sticky=tk.W)
         self.predict_button = tk.Button(self.buttonframe, text="Apply model to data", command=self.apply_model)
-        self.predict_button.grid(row=9, column=2, padx=10, pady=10, sticky=tk.W)
+        self.predict_button.grid(row=10, column=2, padx=10, pady=10, sticky=tk.W)
 
         # Omero upload button
         self.upload_omero_button = tk.Button(self.buttonframe, text="Upload to omero", command=self.upload_to_omero, state=tk.DISABLED)
-        self.upload_omero_button.grid(row=9, column=3, padx=10, pady=10, sticky=tk.W)
+        self.upload_omero_button.grid(row=10, column=3, padx=10, pady=10, sticky=tk.W)
 
         #Text and Progress Bar
         self.progress_text = tk.Text(self.buttonframe, height=6, width=60)
-        self.progress_text.grid(row=9, column=1, columnspan=4, padx = 18, sticky= tk.N + tk.E)
+        self.progress_text.grid(row=10, column=1, columnspan=4, padx = 18, sticky= tk.N + tk.E)
         self.progress_bar = tk.Scrollbar(self.buttonframe)
-        self.progress_bar.grid(row=9, column=4, columnspan=4, sticky=tk.N + tk.S + tk.E)
+        self.progress_bar.grid(row=10, column=4, columnspan=4, sticky=tk.N + tk.S + tk.E)
         text_prog = f" "
         self.progress_text.config(yscrollcommand=self.progress_bar.set)
         self.progress_bar.config(command=self.progress_text.yview)
@@ -197,7 +201,7 @@ class GUI:
         np.random.shuffle(self.imgs)
         patch_shape = self.set_patch_shape()
         patches = self.datagen.generate_patches_from_list(self.imgs, shape=patch_shape, augment=True, shuffle=True)
-        size_train = int((patches.shape[0]) * 0.9)
+        size_train = int((patches.shape[0]) * self.train_fraction)
         self.X = np.array(patches[:size_train])
         self.X_val = np.array(patches[size_train:])
 

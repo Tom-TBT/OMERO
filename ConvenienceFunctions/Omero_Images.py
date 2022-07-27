@@ -298,7 +298,8 @@ def write_config():
 config = configparser.ConfigParser()
 if not os.path.exists(CONFIG_FPATH):
     config['OMERO'] = {'hostname': 'omero-imaging.uni-muenster.de', 'username': '', "port":4064}
-    config['N2V'] =   {'n_epoch': '100', 'dataset_id':"", "batch_size":"32", "patch_size":"64", "steps_per_epoch":"200"}
+    config['N2V'] =   {'n_epoch': '100', 'dataset_id':"", "batch_size":"32",
+                       "patch_size":"64", "train_fraction":"0.9", "steps_per_epoch":"200"}
     write_config()
 else:
     # Read File
